@@ -3,7 +3,7 @@ ABOUT
 -----
 Calculates the rotation angles from individual UVIS detector x and y into
 the V2V3 coordinate system. It reads in output from troll.py and it creates
-the mean of each coefficient which is used in the next step to making the 
+the mean of each coefficient which is used in the next step to making the
 IDCTAB. This code uses the Van Leeuween transformations at one point. We will
 also have a set that doesn't do that in order to test which may be better. (10/10/16)
 
@@ -38,6 +38,7 @@ python coeff2v23_rot2mass.py --uvis='uvis1' -filter='f606w'
 #import all the python things here!
 import math
 from astropy.io import fits
+from astropy.table import Table
 import os
 import argparse
 import numpy as np
@@ -73,11 +74,11 @@ def file_coeff_names(rootnames, uvis):
     '''
 
     if uvis == 'uvis2':
-        file_end = '1.coeffs'
+        file_end = '1.IIIcoeffs'
     if uvis == 'uvis1':
-        file_end = '4.coeffs'
+        file_end = '4.IIIcoeffs'
 
-    coeff_file_names = [i + file_end for i in rootnames] 
+    coeff_file_names = [i + file_end for i in rootnames]
 
 
     return coeff_file_names
@@ -112,7 +113,8 @@ def coeff2v23_rot2mass_vanLeeuween_update_theta_main(uvis, filter_name, outfile_
     cx_3 = 3.5854120e-10
     cx_33 = 2.4239940e-07
 
-    que_rad = cx_3/cx_33
+    # que_rad = cx_3/cx_33
+    que_rad = 0.
     que_degree = math.degrees(que_rad)
     cos_que = math.cos(que_rad)
     sin_que = math.sin(que_rad)
@@ -123,16 +125,23 @@ def coeff2v23_rot2mass_vanLeeuween_update_theta_main(uvis, filter_name, outfile_
 
     ay = []
     ax = []
-    for i in troll_output['coeff_file_names']:
-        with open(i, 'r') as coeff_file:
-            coeff_file_values = [filter(None, line.strip().split(' ')) for line in coeff_file]
-            coefficient_numbers = [coeff_file_values[i][0] for i in coeff_nums]
-            ax_temp = [coeff_file_values[i][1] for i in coeff_nums]
-            ay_temp = [coeff_file_values[i][4] for i in coeff_nums]
-            ax_tfloats = [np.float64(i) for i in ax_temp]
-            ay_tfloats = [np.float64(i) for i in ay_temp]
-            ax.append(ax_tfloats)
-            ay.append(ay_tfloats)
+    print troll_output['coeff_file_names']
+#     for cfile in troll_output['coeff_file_names']:
+#         print 'EXT {} COEFF FILE IS'.format(uvis), i
+#         with open(cfile, 'r') as coeff_file:
+#             coeff_file_values = [filter(None, line.strip().split(' ')) for line in coeff_file]
+#             coefficient_numbers = [coeff_file_values[i][0] for i in coeff_nums]
+#             ax_temp = [coeff_file_values[i][1] for i in coeff_nums]
+#             ay_temp = [coeff_file_values[i][4] for i in coeff_nums]
+#             ax_tfloats = [np.float64(i) for i in ax_temp]
+#             ay_tfloats = [np.float64(i) for i in ay_temp]
+#             ax.append(ax_tfloats)
+#             ay.append(ay_tfloats)
+
+    for cfile in troll_output['coeff_file_names']:
+        tmp_tbl = Table.read(cfile, format='ascii')
+        ax.append(list(tmp_tbl['col2']))
+        ay.append(list(tmp_tbl['col5']))
 
     coeff_output = pd.DataFrame({'coeff_names' : pd.Series(coeff_file_names),
                                 'ax' : pd.Series(ax),
@@ -166,7 +175,7 @@ def coeff2v23_rot2mass_vanLeeuween_update_theta_main(uvis, filter_name, outfile_
         frame_aysin = [(np.float64(i) * sin_que) for i in frame_temp_ay]
         frame_axsin = [(np.float64(i) * sin_que) for i in frame_temp_ax]
         frame_aycos = [(np.float64(i) * cos_que) for i in frame_temp_ay]
-        frame_ax_val = [frame_axcos[i] - frame_aysin[i] for i in range(0, len(frame_axcos))] 
+        frame_ax_val = [frame_axcos[i] - frame_aysin[i] for i in range(0, len(frame_axcos))]
         frame_ay_val = [frame_axsin[i] + frame_aycos[i] for i in range(0, len(frame_axsin))]
         cx.append(frame_ax_val)
         cy.append(frame_ay_val)
@@ -174,7 +183,7 @@ def coeff2v23_rot2mass_vanLeeuween_update_theta_main(uvis, filter_name, outfile_
     coeff_output['cx'] = pd.Series(cx)
     coeff_output['cy'] = pd.Series(cy)
 
-    #the above for vafactor: 
+    #the above for vafactor:
     frame_n_ax_va = [coeff_output['ax_vafactor'][i] for i in range(0,len(coeff_file_names))]
     frame_n_ay_va = [coeff_output['ay_vafactor'][i] for i in range(0,len(coeff_file_names))]
 
@@ -187,7 +196,7 @@ def coeff2v23_rot2mass_vanLeeuween_update_theta_main(uvis, filter_name, outfile_
         frame_aysin_va = [(float(i) * sin_que) for i in frame_temp_ay_va]
         frame_axsin_va = [(float(i) * sin_que) for i in frame_temp_ax_va]
         frame_aycos_va = [(float(i) * cos_que) for i in frame_temp_ay_va]
-        frame_ax_val_va = [frame_axcos_va[i] - frame_aysin_va[i] for i in range(0, len(frame_axcos_va))] 
+        frame_ax_val_va = [frame_axcos_va[i] - frame_aysin_va[i] for i in range(0, len(frame_axcos_va))]
         frame_ay_val_va = [frame_axsin_va[i] + frame_aycos_va[i] for i in range(0, len(frame_axsin_va))]
         cx_va.append(frame_ax_val_va)
         cy_va.append(frame_ay_val_va)
@@ -200,7 +209,7 @@ def coeff2v23_rot2mass_vanLeeuween_update_theta_main(uvis, filter_name, outfile_
     #(Uses new catalogue values from NGC5139_WFC3UV_F606W.fits (/grp/hst/wfc3h/verap/STANDARD_CAT/JAYWORK/99.EXPORT))
     ra_c = 2.016970062256e+02
     dec_c = -4.74794731140e+01
-    #dec_c =-4.747222222222e+01 # Old Catalogue.
+    # dec_c =-4.747222222222e+01 # Old Catalogue.
 
     epsilon_deg_list = []
     ra_t_all = troll_output['ra_t']
@@ -226,7 +235,7 @@ def coeff2v23_rot2mass_vanLeeuween_update_theta_main(uvis, filter_name, outfile_
     #print orient_c[64]
     #print eps[64]
     #print pav3corr[64]
-  
+
 
     for x in xrange(len(orient_c)):
         epsilon_deg_now = epsilon_deg_list[x]
@@ -241,17 +250,26 @@ def coeff2v23_rot2mass_vanLeeuween_update_theta_main(uvis, filter_name, outfile_
         #cos_t = math.cos(theta_rad)
         #cos_t_list.append(cos_t)
 
-    #mean_theta_rad = np.mean(theta_rad_list)
-    #mean_theta_deg = math.degrees(mean_theta_rad)
+    mean_theta_rad = np.mean(theta_rad_list)
+    mean_theta_deg = math.degrees(mean_theta_rad)
     #print "Theta list: ", theta_rad_list
     #print "Mean Theta new catalogue (rad) = ", mean_theta_rad
     #print "Mean Theta new catalogue(deg) = ", mean_theta_deg
 
     # 12/21/2016: We want to try to calculate with the mean theta from the old catalogue:
     # old_dec_theta=44.663478; old_rad_theta=0.77952474
-    
-    mean_old_theta_rad = 0.77952474
-    mean_old_theta_deg = 44.663478
+
+    mean_old_theta_rad = 0.78126173307
+    mean_old_theta_deg = 44.763
+
+    # #old
+    # mean_old_theta_rad = 0.77952474
+    # mean_old_theta_deg = 44.663478
+
+
+    # mean_old_theta_rad = np.mean(theta_rad_list)
+    # mean_old_theta_deg = math.degrees(mean_theta_rad)
+
 
     print "Mean Theta old catalogue (rad) = ", mean_old_theta_rad
     print "Mean Theta old catalogue(deg) = ", mean_old_theta_deg
@@ -277,6 +295,7 @@ def coeff2v23_rot2mass_vanLeeuween_update_theta_main(uvis, filter_name, outfile_
         cy_r_before_mean = (coeff_x_sin + coeff_y_cos)
         r_cx_list.append(cx_r_before_mean)
         r_cy_list.append(cy_r_before_mean)
+        print 'CX10_i',  cx_r_before_mean[0]
 
 
     for i in range(0,len(coeff_file_names)):
@@ -289,10 +308,10 @@ def coeff2v23_rot2mass_vanLeeuween_update_theta_main(uvis, filter_name, outfile_
         r_cx_list_va.append(cx_r_before_mean_va)
         r_cy_list_va.append(cy_r_before_mean_va)
         #print coeff_output['coeff_names'][i]
-        #print coeff_output['cx'][i] 
+        #print coeff_output['cx'][i]
         #print ' '
         #print troll_output['name'][i]
-        #print troll_output['vafactor'][i] 
+        #print troll_output['vafactor'][i]
         #print ' '
         #print (np.array(coeff_output['cx'][i])/np.array(troll_output['vafactor'][i]))
 
@@ -300,7 +319,7 @@ def coeff2v23_rot2mass_vanLeeuween_update_theta_main(uvis, filter_name, outfile_
     #print coeff_output
     #vafactors = troll_output['vafactor']
     #mean_vafactor = sum(vafactors)/len(vafactors)
-    #print " " 
+    #print " "
     #print "mean_vafactor value = ", mean_vafactor
     #print " "
 
@@ -308,7 +327,7 @@ def coeff2v23_rot2mass_vanLeeuween_update_theta_main(uvis, filter_name, outfile_
     m_cy = sum(r_cy_list)/len(r_cy_list)
     m_cx_va = sum(r_cx_list_va)/len(r_cx_list_va)
     m_cy_va = sum(r_cy_list_va)/len(r_cy_list_va)
-    
+
     os.chdir(main_dir)
     coeff_num = range(1,16)
     m_cx_prec = []
@@ -361,7 +380,7 @@ def coeff2v23_rot2mass_vanLeeuween_update_theta_main(uvis, filter_name, outfile_
 #                        type = str, required = False, help = outfile_date_help, default = '01.01.2016')
 #    parser.add_argument('--path_troll_output', '-path_troll', dest = 'path_troll_output', action='store', type = str,
 #                        required = True, help = path_troll_output_help)
-#    parser.add_argument('--path_to_coeff_files', '-path_coeff', dest = 'path_to_coeff_files', 
+#    parser.add_argument('--path_to_coeff_files', '-path_coeff', dest = 'path_to_coeff_files',
 #                        action = 'store', type = str, required = True, help = path_to_coeff_files_help)
 #    Parse args:
 #    args = parser.parse_args()

@@ -1,9 +1,9 @@
 #! /usr/bin/env python
 
-"""Generates the IDCTAB. 
+"""Generates the IDCTAB.
 
-This script serves as a pipeline to create the IDCTAB from various 
-other inputs and is a wrapper around several modules that perform 
+This script serves as a pipeline to create the IDCTAB from various
+other inputs and is a wrapper around several modules that perform
 subtasks of the IDCTAB creation algorithm.
 
 Author(s)
@@ -11,13 +11,13 @@ Author(s)
     Catherine Martlin, January 2017.
 
 Use
---- 
+---
 
 python make_idctab.py --filter_name='F606W' --filename_list='f606w_oct_2016_flc_files_removed_mismatched_odd_file_removed.txt' --path_to_data='/grp/hst/wfc3h/verap/F606W_FLC/xymc/' --path_to_coeff_files='/grp/hst/wfc3h/verap/F606W_FLC/meta_pix.v32_new/'
 
 
-python make_idctab.py --filter_name='F410M' --filename_list='F410M_oldcat_filenames.txt' 
---path_to_data='/grp/hst/wfc3h/verap/CAL_14393/F410M_oldcat/xymc/' 
+python make_idctab.py --filter_name='F410M' --filename_list='F410M_oldcat_filenames.txt'
+--path_to_data='/grp/hst/wfc3h/verap/CAL_14393/F410M_oldcat/xymc/'
 --path_to_coeff_files='/grp/hst/wfc3h/verap/CAL_14393/F410M_oldcat/meta_pix.v3/'
 
 Dependencies
@@ -58,7 +58,7 @@ def prep_files_for_readwf3poly(veracoeff_output, coeff2v23_output):
 
     if 'vafactor' in i:
         outfile_name = 'veracoeff_combined_output_vafactor.txt'
-    else: 
+    else:
         outfile_name = 'veracoeff_combined_output.txt'
     f = open(outfile_name, 'w')
     for k in list_of_values:
@@ -84,7 +84,6 @@ def make_idctab_main(filter_name, filename_list, path_to_data,path_to_coeff_file
         """
     outfile_date = datetime.date.today()
     extension_list = [1,4]
-    uvis_list = ['uvis1','uvis2']
 
     screen_outputfile = filter_name + '_'+ str(outfile_date) + '_outputs.info'
 
@@ -97,6 +96,8 @@ def make_idctab_main(filter_name, filename_list, path_to_data,path_to_coeff_file
         troll_outputs.append(troll_outfile)
         print troll_outfile
 
+    print 'THIS IS THE OUTPUTS', troll_outputs
+
     uvis_names = ['uvis2','uvis1']
     uvis_troll = zip(troll_outputs,uvis_names)
 
@@ -107,18 +108,18 @@ def make_idctab_main(filter_name, filename_list, path_to_data,path_to_coeff_file
         print k
         uvis = k[1]
         troll_output = k[0]
-        #if vanL == 'True': 
+        #if vanL == 'True':
         coeff2v23_rot2mass_vanLeeuween_update_theta_main(uvis,filter_name,outfile_date,troll_output,path_to_coeff_files,screen_outputfile)
         #coeff2v23_rot2mass_vanLeeuween_main(uvis,filter_name,outfile_date,troll_output,path_to_coeff_files,screen_outputfile)
         #coeff_outfile_name = 'coeff2v23_with_vafactor_output_vL_mean_theta_{}_{}_{}.txt'.format(uvis, filter_name, outfile_date)
-        
+
         # If you want to use the new_cat theta then we need
-        # to go into coeff2v23... and change the theta value 
-        # being used and uncomment line 111 and comment 116. 
+        # to go into coeff2v23... and change the theta value
+        # being used and uncomment line 111 and comment 116.
         coeff_outfile_name = 'coeff2v23_vafactor_output_vL_mean_old_cat_theta_{}_{}_{}.txt'.format(uvis, filter_name, outfile_date)
         print coeff_outfile_name
         coeff2v23_output.append(coeff_outfile_name)
-            
+
     chip_number = ['2','1']
     chip_coeff2v23 = zip(chip_number,coeff2v23_output)
     veracoeff_output = []
@@ -133,8 +134,8 @@ def make_idctab_main(filter_name, filename_list, path_to_data,path_to_coeff_file
         detector = "UVIS" + str(chipnumber)
         outfile_veracoeff = "veracoeff_output_{}_{}.txt".format(detector,outfile_date)
         outfile_veracoeff_vafactor = "veracoeff_output_vafactor_{}_{}.txt".format(detector,outfile_date)
-        print outfile_veracoeff
-        print outfile_veracoeff_vafactor
+        # print outfile_veracoeff
+        # print outfile_veracoeff_vafactor
         veracoeff_output.append(outfile_veracoeff)
         veracoeff_output_vafactor.append(outfile_veracoeff_vafactor)
 
@@ -148,9 +149,9 @@ def make_idctab_main(filter_name, filename_list, path_to_data,path_to_coeff_file
     print " "
     print "RUNNING readwf3poly_perfilter.py:"
     readwf3poly_onefilter_main(combined_veracoeff_output,readwf3poly_outfile,screen_outputfile)
-    print combined_veracoeff_output
+    # print combined_veracoeff_output
     readwf3poly_onefilter_main(combined_veracoeff_output_vafactor,readwf3poly_outfile_vafactor,screen_outputfile)
-    print combined_veracoeff_output_vafactor
+    # print combined_veracoeff_output_vafactor
 
     print " "
     print "This IDCTAB was found using the VanLeeuween rotations and the mean old catalogue theta value."
@@ -184,7 +185,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--filter_name', '-filter', dest = 'filter_name', action = 'store',
                         type = str, required = False, help = filter_name_help, default = 'f606w')
-    parser.add_argument('--path_to_coeff_files', '-path_coeff', dest = 'path_to_coeff_files', 
+    parser.add_argument('--path_to_coeff_files', '-path_coeff', dest = 'path_to_coeff_files',
                         action = 'store', type = str, required = False, help = path_to_coeff_files_help,
                         default = '/grp/hst/wfc3v/martlin/idctab_creation/coeffs/')
     parser.add_argument('--path_to_data', '-path', dest = 'path_to_data',
@@ -196,7 +197,7 @@ def parse_args():
                         help = filename_list_help)
     #parser.add_argument('--vanL', '-vanL', dest = 'vanL',
     #                    action = 'store', type = str, required = True,
-    #                    help = vanL_help)    
+    #                    help = vanL_help)
 
     # Parse args:
     args = parser.parse_args()
@@ -209,4 +210,3 @@ if __name__ == '__main__':
     args = parse_args()
 
     make_idctab_main(args.filter_name, args.filename_list, args.path_to_data, args.path_to_coeff_files)
-

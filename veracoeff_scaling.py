@@ -66,7 +66,7 @@ def veracoeff_scaling_main(chipfile, chipnumber,outfile_date,screen_outputfile):
             y.append(a_temp[2])
             x_va.append(a_temp[4])
             y_va.append(a_temp[5])
-    
+
     test = np.array(x) * 0.04
     # Fill Matrices with values:
     # i_list and j_list are created from the IDL code and made to mimic that
@@ -100,7 +100,7 @@ def veracoeff_scaling_main(chipfile, chipnumber,outfile_date,screen_outputfile):
     b_sqr_2 = (b_scaled[1,1])**(2.0)
     b_sqr_3 = (b_scaled[0,1])**(2.0)
 
-    #Now for vafactor affected ones: 
+    #Now for vafactor affected ones:
     a_va_scaled = (a_va*pix)
     b_va_scaled = (b_va*pix)
 

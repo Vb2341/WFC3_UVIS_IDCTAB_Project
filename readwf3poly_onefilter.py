@@ -142,9 +142,13 @@ def readwf3poly_onefilter_main(filename,outfile_name,screen_outputfile):
     print x2scale, y2scale, betax2, betay2, (betay2-betax2)
     print ' '
 
-    #Shift to known UVIS reference from alignment measurement from June 2012:
-    uv2v2 = -27.4596
-    uv2v3 = -33.2604
+    #Shift to known UVIS reference from alignment measurement from 2019:
+    uv2v2 = -27.599
+    uv2v3 = -33.281
+
+    #old
+    # uv2v2 = -27.4596
+    # uv2v3 = -33.2604
     v21 = a1[0]-a2[0] + uv2v2
     v31 = b1[0]-b2[0] + uv2v3
     v22 = uv2v2
@@ -200,7 +204,7 @@ def readwf3poly_onefilter_main(filename,outfile_name,screen_outputfile):
         bd1_prec.append(np.float64(bd1_prec_t))
         ad2_prec_t = '{:.7e}'.format(np.float64(ad2[x]))
         ad2_prec.append(np.float64(ad2_prec_t))
-        bd2_prec_t = '{:.7e}'.format(np.float64(bd2[x])) 
+        bd2_prec_t = '{:.7e}'.format(np.float64(bd2[x]))
         bd2_prec.append(np.float64(bd2_prec_t))
 
     with open(idcfile, 'w') as idctab_file:

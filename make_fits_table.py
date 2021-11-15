@@ -1,14 +1,14 @@
 #! /usr/bin/env python
 
-"""Generates the IDCTAB. 
+"""Generates the IDCTAB.
 
 This script takes the output textfile of readwf3poly_onefilter and
 creates a FITs table from it that is the final IDCTAB FITs table.
 
-Author: 
+Author:
 	Catherine Martlin, October 2016.
 
-Use: 
+Use:
 
 python make_fits_table.py --path='/grp/hst/wfc3v/martlin/idctab_creation/current_idctab_results/feb_06_2017_results/UVIS_F606W_CM_2017_02_06_idc.textfile' --output_filename='UVIS_F606W_CM_2017_02_10_idc.fits'
 
@@ -27,15 +27,15 @@ from astropy.io import fits
 import csv
 # ---------------------------------------------------------------------
 def readfile(path, delim):
-    
+
     lines =[]
-    
+
     with open(path, 'rb') as f:
         reader = csv.reader(f, delimiter='\t')
         for row in reader:
             for line in row:
                 lines.append(line)
-    
+
     return lines
 # ---------------------------------------------------------------------
 # The main controller
@@ -51,15 +51,15 @@ def make_fits_table_main(path, output_filename):
         Outputs:
 
         """
-    #Read in the file: 
+    #Read in the file:
     idctab_all_vals = readfile(path, ' ')
 
-    #Split the file into chip 1 and 2: 
+    #Split the file into chip 1 and 2:
     chip1 = idctab_all_vals[0:39]
     chip2 = idctab_all_vals[39:79]
     chip2.remove('')
 
-    # Now set the various values as the type they need to be: 
+    # Now set the various values as the type they need to be:
     chip1[0] = np.int16(chip1[0])
     chip1[1] = np.str(chip1[1])
     chip1[2] = np.str(chip1[2])
@@ -74,10 +74,10 @@ def make_fits_table_main(path, output_filename):
     chip2[4] = np.int32(chip2[4])
     chip2[5:39] = np.float32(chip2[5:39])
 
-    # Make all the arrays: 
+    # Make all the arrays:
     a1 = np.array([chip1[0],chip2[0]])
     a2 = np.array([chip1[1],chip2[1]])
-    a3 = np.array([chip1[2],chip2[2]]) 
+    a3 = np.array([chip1[2],chip2[2]])
     a4 = np.array([chip1[3],chip2[3]])
     a5 = np.array([chip1[4],chip2[4]])
     a6 = np.array([chip1[5],chip2[5]])
@@ -115,7 +115,7 @@ def make_fits_table_main(path, output_filename):
     a38 = np.array([chip1[37],chip2[37]])
     a39 = np.array([chip1[38],chip2[38]])
 
-    # Make all the columns: 
+    # Make all the columns:
     col1 = fits.Column(name = 'DETCHIP', format='1I', unit ='chip', null=-32767, disp='I4',array=a1)
     col2 = fits.Column(name = 'DIRECTION', format='8A', disp='A8',array=a2 )
     col3 = fits.Column(name = 'FILTER', format='8A', disp='A8',array=a3 )
@@ -156,20 +156,20 @@ def make_fits_table_main(path, output_filename):
     col38 = fits.Column(name = 'CY43', format='1E', disp='E20.7',array=a38 )
     col39 = fits.Column(name = 'CY44', format='1E', disp='E20.7',array=a39 )
 
-    # Make what will become the fits file: 
+    # Make what will become the fits file:
     cols = fits.ColDefs([col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,
                      col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,
                      col33,col34,col35,col36,col37,col38,col39])
 
-    # Make the fits file: 
+    # Make the fits file:
     tbhdu = fits.BinTableHDU.from_columns(cols)
     temp_output = 'temp_fits_file_' + output_filename + '.fits'
     tbhdu.writeto(temp_output)
 
-    # Now open the file to add all the comments/Primary Header: 
+    # Now open the file to add all the comments/Primary Header:
     my_test_image = fits.open(temp_output)
 
-    # Add the comments to all the values: 
+    # Add the comments to all the values:
     my_test_image[1].header.comments['TTYPE1'] = 'label for field   1  '
     my_test_image[1].header.comments['TFORM1'] = 'data format of field: 2-byte INTEGER '
     my_test_image[1].header.comments['TUNIT1'] = 'physical unit of field '
@@ -293,14 +293,14 @@ def make_fits_table_main(path, output_filename):
     my_test_image[1].header.comments['TNULL4'] = 'undefined value for column '
     my_test_image[1].header.comments['TNULL5'] = 'undefined value for column '
 
-    # Add header information: 
+    # Add header information:
     prihdr = fits.Header()
     prihdr['NORDER'] = 4
     prihdr['TELESCOP'] = 'HST ' # Added 02/08/2017
     prihdr['INSTRUME'] = 'WFC3 '
     prihdr['DETECTOR'] = 'UVIS '
     prihdr['FILETYPE'] = 'Distortion Coefficients'
-    prihdr['COMMENT'] = 'Created by C. Martlin, February, 2017'  
+    prihdr['COMMENT'] = 'Created by V. Bajaj, June, 2020'
     prihdr['DESCRIP'] = 'Geometric Distortion Coefficients'
     prihdu = fits.PrimaryHDU(header=prihdr)
 
@@ -336,7 +336,7 @@ def parse_args():
                         type = str, required = True, help = path_help)
     parser.add_argument('--output_filename', '-ofile', dest = 'output_filename', action = 'store',
                         type = str, required = True, help = output_filename_help)
-    
+
     # Parse args:
     args = parser.parse_args()
 

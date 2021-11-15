@@ -157,8 +157,12 @@ def troll_main(filename_list, outfile_date, extension, path_to_data,path_to_coef
 
             # Convert the stuff:
             pi = math.pi
-            v2 = -27.4596 # New one from 2012
-            v3 = -33.2604
+            v2 = -27.599 # New one from 2019
+            v3 = -33.281
+
+            #old
+            # v2 = -27.4596
+            # v3 = -33.2604
             v2_rad = convert_to_rads(v2)
             v3_rad = convert_to_rads(v3)
 
